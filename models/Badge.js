@@ -4,9 +4,9 @@ const sc = require('../modules/util/statusCode');
 const pool = require('../modules/db/pool');
 
 module.exports = {
-    insert: async (title, description, imageUrl, email, walletLists, collectionContentUri, nftItemContentBaseUri) => {
-        const data = `'${title}', '${description}', '${imageUrl}', '${email}', '${false}', '${collectionContentUri}', '${nftItemContentBaseUri}'`;
-        const query = `INSERT INTO Badge (title, description, imageUrl, email, isApproved, collectionContentUri, nftItemContentBaseUri) VALUES (${data});`
+    insert: async (title, description, imageUrl, email, walletLists, collectionContentUri, nftItemContentBaseUri, owner) => {
+        const data = `'${title}', '${description}', '${imageUrl}', '${email}', '${false}', '${collectionContentUri}', '${nftItemContentBaseUri}', '${owner}'`;
+        const query = `INSERT INTO Badge (title, description, imageUrl, email, isApproved, collectionContentUri, nftItemContentBaseUri, owner) VALUES (${data});`
         const [result] = await pool.queryParam(query);
         const insertId = result.insertId;
         walletLists.map(async (address) => {
@@ -27,7 +27,7 @@ module.exports = {
     },
     listBadges: async (walletAddress) => {
         const query = `
-        SELECT b.id, b.title, b.description, b.imageUrl, b.nftItemContentBaseUri, b.mintAmount,
+        SELECT b.id, b.title, b.description, b.imageUrl, b.nftItemContentBaseUri, b.mintAmount, b.owner,
         COALESCE((SELECT MAX(CASE WHEN bw.address = '${walletAddress}' THEN 1 ELSE 0 END)
         FROM BadgeWallet bw WHERE bw.badgeId = b.id), 0) AS isWhiteListed
         FROM Badge b

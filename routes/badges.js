@@ -33,7 +33,7 @@ const upload = multer({
   
 
 router.post('/', upload.single('image'), async (req, res) => {
-    const {title, description, email, walletLists} = req.body;
+    const {title, description, email, walletLists, owner} = req.body;
     const imageUrl = S3_BASE_URL + req.file.key;
     if(!title || !description || !imageUrl || !email || !walletLists) res.status(sc.BAD_REQUEST).send(au.successFalse(rm.NULL_VALUE));
 
@@ -62,7 +62,7 @@ router.post('/', upload.single('image'), async (req, res) => {
             const collectionContentUri = data.Location; // badge.json file location
             const nftItemContentBaseUri = S3_BASE_URL + key;
             try {
-                const {code, json} = await Badge.insert(title, description, imageUrl, email, JSON.parse(walletLists), collectionContentUri, nftItemContentBaseUri);
+                const {code, json} = await Badge.insert(title, description, imageUrl, email, JSON.parse(walletLists), collectionContentUri, nftItemContentBaseUri, owner);
                 res.status(code).send(json);
             } catch (err) {
                 console.log(err);
