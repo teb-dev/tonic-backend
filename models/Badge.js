@@ -28,12 +28,10 @@ module.exports = {
     listBadges: async (walletAddress) => {
         const query = `
         SELECT b.id, b.title, b.description, b.imageUrl, b.nftItemContentBaseUri, b.mintAmount,
-        CASE
-            WHEN bw.address = '${walletAddress}' THEN 1
-            ELSE 0
-        END AS isWhiteListed
+        COALESCE((SELECT MAX(CASE WHEN bw.address = '${walletAddress}' THEN 1 ELSE 0 END)
+        FROM BadgeWallet bw WHERE bw.badgeId = b.id), 0) AS isWhiteListed
         FROM Badge b
-        JOIN BadgeWallet bw ON b.id = bw.badgeId
+        LEFT JOIN BadgeWallet bw ON b.id = bw.badgeId
         GROUP BY b.id`;
         let [result] = await pool.queryParam(query);
         if (!result) {
